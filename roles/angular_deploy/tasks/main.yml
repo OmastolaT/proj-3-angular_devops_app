@@ -1,0 +1,47 @@
+---
+- name: Create releases directory
+  ansible.builtin.file:
+    path: /var/www/html/releases
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Copy artifact to remote (from controller to target)
+  ansible.builtin.copy:
+    src: "{{ artifact_local_path }}"
+    dest: "/tmp/{{ artifact_name }}"
+    mode: '0644'
+
+- name: Create release directory for version
+  ansible.builtin.file:
+    path: "/var/www/html/releases/{{ release_version }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Extract artifact to release dir
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ artifact_name }}"
+    dest: "/var/www/html/releases/{{ release_version }}"
+    remote_src: yes
+
+- name: Set ownership for release
+  ansible.builtin.file:
+    path: "/var/www/html/releases/{{ release_version }}"
+    recurse: yes
+    owner: www-data
+    group: www-data
+
+- name: Update current symlink to point to release
+  ansible.builtin.file:
+    src: "/var/www/html/releases/{{ release_version }}"
+    dest: /var/www/html/current
+    state: link
+
+- name: Ensure index.html points to current index
+  ansible.builtin.file:
+    src: /var/www/html/current/index.html
+    dest: /var/www/html/index.html
+    state: link

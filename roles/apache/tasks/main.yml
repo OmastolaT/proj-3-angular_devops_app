@@ -1,0 +1,37 @@
+---
+- name: Install apache2 on Debian/Ubuntu
+  ansible.builtin.apt:
+    name: apache2
+    state: present
+    update_cache: yes
+  when: ansible_os_family == 'Debian'
+
+- name: Install httpd on RedHat
+  ansible.builtin.yum:
+    name: httpd
+    state: present
+  when: ansible_os_family == 'RedHat'
+
+- name: Ensure web root exists
+  ansible.builtin.file:
+    path: /var/www/html
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure web root exists for RedHat
+  ansible.builtin.file:
+    path: /var/www/html
+    state: directory
+    owner: apache
+    group: apache
+    mode: '0755'
+  when: ansible_os_family == 'RedHat'
+
+- name: Ensure apache/httpd is enabled and running
+  ansible.builtin.service:
+    name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+    state: started
+    enabled: yes

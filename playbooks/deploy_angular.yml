@@ -1,0 +1,10 @@
+- hosts: app
+  become: yes
+  vars:
+    artifact_local_path: "{{ playbook_dir }}/artifacts/{{ artifact_name }}"
+    artifact_name: "{{ artifact_name }}"
+    release_version: "{{ release_version }}"
+  roles:
+    - common
+    - apache
+    - angular_deploy

@@ -1,0 +1,3 @@
+- import_playbook: jenkins_install.yml
+- import_playbook: mariadb.yml
+- import_playbook: deploy_angular.yml
