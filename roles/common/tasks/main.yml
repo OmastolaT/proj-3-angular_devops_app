@@ -1,19 +1,33 @@
 ---
-- name: Update apt cache (Debian family)
-  ansible.builtin.apt:
-    update_cache: yes
-    cache_valid_time: 3600
-  when: ansible_os_family == 'Debian'
-
-- name: Update yum cache (RedHat family)
+- name: Install Java (OpenJDK 11) - RedHat
   ansible.builtin.yum:
-    name: '*'
-    state: latest
+    name: java-11-amazon-corretto-headless
+    state: present
   when: ansible_os_family == 'RedHat'
 
-- name: Ensure python3 and pip are installed
-  ansible.builtin.package:
-    name:
-      - python3
-      - python3-pip
+- name: Add Jenkins repo
+  ansible.builtin.get_url:
+    url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+  become: true
+
+- name: Import Jenkins repo key
+  ansible.builtin.rpm_key:
     state: present
+    key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+- name: Install Jenkins and git
+  ansible.builtin.yum:
+    name:
+      - jenkins
+      - git
+      - unzip
+    state: present
+
+- name: Ensure Jenkins is started and enabled
+  ansible.builtin.systemd:
+    name: jenkins
+    enabled: yes
+    state: started
+
+...
