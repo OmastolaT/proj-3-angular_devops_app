@@ -14,17 +14,25 @@ pipeline {
 
   stages {
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        checkout scm
+      }
     }
+
     stage('Build') {
-      when { expression { params.ROLLBACK_TO == '' } }
+      when {
+        expression { params.ROLLBACK_TO == '' }
+      }
       steps {
         sh 'npm install'
         sh 'npm run build -- --prod'
       }
     }
+
     stage('Package') {
-      when { expression { params.ROLLBACK_TO == '' } }
+      when {
+        expression { params.ROLLBACK_TO == '' }
+      }
       steps {
         script {
           def release = params.RELEASE_TAG?.trim() ?: "v${new Date().format('yyyyMMddHHmmss')}"
@@ -33,8 +41,13 @@ pipeline {
           sh "tar -czf ${WORKSPACE_ARTIFACTS}/angular-${release}.tar.gz -C dist/ ."
         }
       }
-      post { success { archiveArtifacts artifacts: 'artifacts/*.tar.gz', fingerprint: true } }
+      post {
+        success {
+          archiveArtifacts artifacts: 'artifacts/*.tar.gz', fingerprint: true
+        }
+      }
     }
+
     stage('DeployOrRollback') {
       steps {
         script {
@@ -48,5 +61,10 @@ pipeline {
       }
     }
   }
-  post { always { echo 'Pipeline finished.' } }
+
+  post {
+    always {
+      echo 'Pipeline finished.'
+    }
+  }
 }
